@@ -4,7 +4,7 @@
 
 * Introduction
 
-  This file is an `org` file which outlines my Emacs configuration in
+  This file is an [[http://orgmode.org][Org]] file which outlines my Emacs configuration in
   a (hopefully) readable format. This document was based off of Joost
   Diepenmaat's Emacs configuration, which can be found [[https://github.com/joodie/emacs-literal-config/][here]].
 
@@ -12,12 +12,12 @@
 
 ** Obtaining the source
 
-  The most recent public version of my configuration is available [[https://github.com/zajn/new-dotfiles][on Github]].
+  The most recent public version of my configuration is available [[https://github.com/zajn/emacs-config][on Github]].
 
 ** Installation
 
   1. Install GNU Emacs 25 or higher
-  2. Clone [[https://github.com/zajn/new-dotfiles][the repository]] to ~$HOME/.emacs.d~, or clone elsewhere and
+  2. Clone [[https://github.com/zajn/emacs-config][the repository]] to ~$HOME/.emacs.d~, or clone elsewhere and
   symlink to that directory
   3. Start Emacs
 
@@ -46,9 +46,7 @@
   
 ** Setting fonts
 
-  I use [[https://github.com/nathco/Office-Code-Pro][Office Code Pro D]] for my font throughout Emacs. I have considered using other
-  fonts with better support for ligatures, but have not had a need or desire to do that.
-  
+  I use [[https://github.com/nathco/Office-Code-Pro][Office Code Pro D]] for my font throughout Emacs.
   This assumes that Office Code Pro D is installed and accessible by Emacs.
   
   #+name: fonts
