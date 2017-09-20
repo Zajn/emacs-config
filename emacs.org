@@ -1,0 +1,61 @@
+#+TITLE: Zach's emacs config
+#+AUTHOR: Zachary Jones
+#+EMAIL: zt.jones88@gmail.com
+
+* Introduction
+
+  This file is an `org` file which outlines my Emacs configuration in
+  a (hopefully) readable format. This document was based off of Joost
+  Diepenmaat's Emacs configuration, which can be found [[https://github.com/joodie/emacs-literal-config/][here]].
+
+* How to use
+
+** Obtaining the source
+
+  The most recent public version of my configuration is available [[https://github.com/zajn/new-dotfiles][on Github]].
+
+** Installation
+
+  1. Install GNU Emacs 25 or higher
+  2. Clone [[https://github.com/zajn/new-dotfiles][the repository]] to ~$HOME/.emacs.d~, or clone elsewhere and
+  symlink to that directory
+  3. Start Emacs
+
+* User Information
+
+   This sets up my user name and default working directory in Emacs.
+   
+   #+name: user-configuration
+   #+BEGIN_SRC emacs-lisp
+   (setq default-directory (concat (getenv "HOME") "/"))
+   (setq user-full-name "Zach Jones")
+   #+END_SRC
+
+* Appearance
+** Theme
+
+  I currently use the [[https://github.com/cpaulik/emacs-material-theme][Material]] theme.
+
+  #+name: theme
+  #+BEGIN_SRC emacs-lisp
+  (use-package material-theme
+    :ensure t
+    :config
+    (load-theme 'material 'no-confirm))
+  #+END_SRC
+  
+** Setting fonts
+
+  I use [[https://github.com/nathco/Office-Code-Pro][Office Code Pro D]] for my font throughout Emacs. I have considered using other
+  fonts with better support for ligatures, but have not had a need or desire to do that.
+  
+  This assumes that Office Code Pro D is installed and accessible by Emacs.
+  
+  #+name: fonts
+  #+BEGIN_SRC emacs-lisp
+  (set-face-attributes 'default nil
+                       :family "Office Code Pro D"
+                       :height 120
+                       :weight 'normal
+                       :width 'normal)
+  #+END_SRC
