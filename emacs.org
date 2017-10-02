@@ -24,7 +24,7 @@
 * User Information
 
    This sets up my user name and default working directory in Emacs.
-   
+
    #+name: user-configuration
    #+BEGIN_SRC emacs-lisp
    (setq default-directory (concat (getenv "HOME") "/"))
@@ -43,12 +43,12 @@
     :config
     (load-theme 'material 'no-confirm))
   #+END_SRC
-  
+
 ** Setting fonts
 
   I use [[https://github.com/nathco/Office-Code-Pro][Office Code Pro D]] for my font throughout Emacs.
   This assumes that Office Code Pro D is installed and accessible by Emacs.
-  
+
   #+name: fonts
   #+BEGIN_SRC emacs-lisp
   (set-face-attributes 'default nil
@@ -56,4 +56,86 @@
                        :height 120
                        :weight 'normal
                        :width 'normal)
+  #+END_SRC
+
+* OSX Specific Things
+  I want my ~exec-path~ in Emacs to match what my ~$PATH~ looks like in the shell.
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package exec-path-from-shell
+    :ensure t
+    :config
+    (when (memq window-system '(mac ns x))
+       (exec-path-from-shell-initialize)))
+  #+END_SRC
+
+* Source Control
+** Magit
+  This sets up a few keybindings for my commonly used Magit functions.
+  #+BEGIN_SRC emacs-lisp
+  (use-package magit
+    :ensure t
+    :commands (magit-status magit-blame)
+    :bind (("C-x g" . magit-status)
+           ("C-x B" . magit-blame))
+
+    :config
+    (setq magit-last-seen-setup-instructions "1.4.0"))
+  #+END_SRC
+
+* Programming Modes
+** Web mode
+  Automatically open HTML files using ~web-mode~.
+  #+BEGIN_SRC emacs-lisp
+  (use-package web-mode
+    :ensure t
+    :config
+    (require 'web-mode)
+    (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+  )
+  #+END_SRC
+
+* Custom Functions
+
+  This section lists all the custom utility functions that I have created
+  (read: copied).
+
+** Scratch buffer generation
+
+  Creates a new scratch buffer
+  #+BEGIN_SRC emacs-lisp
+  (defun zajn/generate-buffer ()
+    (interactive)
+    (switch-to-buffer (make-temp-name "scratch")))
+  #+END_SRC
+
+** Auto-indent on newline
+
+  This function places the cursor at the proper indentation level when
+  creating functions that use ~{}~. Idea stolen from [[http://stackoverflow.com/a/17506763/749004][this Stackoverflow post]].
+
+  #+BEGIN_SRC emacs-lisp
+  (defun zajn/newline-and-indent ()
+    "`newline-and-indent', but bracket aware"
+    (interactive)
+    (insert "\n")
+    (when (looking-at "}")
+      (insert "\n")
+      (indent-according-to-mode)
+      (forward-line -1))
+    (indent-according-to-mode))
+  #+END_SRC
+
+** Large files
+  #+BEGIN_SRC emacs-lisp
+  (defun zajn/large-file-hook ()
+    "If a file is over a given size, turn off linum-mode"
+    (when (> (buffer-size) (* 1024 1024))
+    (linum-mode 0)))
+  #+END_SRC
+
+* Tramp
+  Tramp seems to have some issues with ~zsh~, so we'll switch to bash when tramp is active.
+  #+BEGIN_SRC emacs-lisp
+  (eval-after-load 'tramp '(setenv "SHELL" "/bin/bash"))
   #+END_SRC
