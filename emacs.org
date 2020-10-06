@@ -30,20 +30,36 @@
    (setq default-directory (concat (getenv "HOME") "/"))
    (setq user-full-name "Zach Jones")
    #+END_SRC
+* Use package
 
+  #+BEGIN_SRC emacs-lisp
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+  (setq use-package-verbose t)
+  (setq use-package-always-ensure t)
+  (require 'use-package)
+  (use-package auto-compile
+    :config (auto-compile-on-load-mode))
+  (setq load-prefer-newer t)
+  #+END_SRC
 * Appearance
 ** Theme
 
-  I currently use the [[https://github.com/cpaulik/emacs-material-theme][Material]] theme.
-
+  I currently use the https://github.com/cpaulik/emacs-material-theme][Material]] theme
+  or the [[https://github.com/ianpan870102/acme-emacs-theme][Acme]] theme.
   #+name: theme
   #+BEGIN_SRC emacs-lisp
-  (use-package material-theme
+  (use-package acme-theme
     :ensure t
     :config
-    (load-theme 'material 'no-confirm))
+    (load-theme 'acme t))
   #+END_SRC
 
+** Removing Menu Bar
+  #+BEGIN_SRC emacs-lisp
+  (if (fboundp 'tool-bar-mode) (tool-bar-mode nil))
+  #+END_SRC
 ** Setting fonts
 
   I use [[https://github.com/nathco/Office-Code-Pro][Office Code Pro D]] for my font throughout Emacs.
@@ -51,11 +67,8 @@
 
   #+name: fonts
   #+BEGIN_SRC emacs-lisp
-  (set-face-attributes 'default nil
-                       :family "Office Code Pro D"
-                       :height 120
-                       :weight 'normal
-                       :width 'normal)
+  (custom-set-faces
+    '(default ((t (:height 140 :family "Office Code Pro D")))))
   #+END_SRC
 
 * OSX Specific Things
@@ -80,7 +93,12 @@
            ("C-x B" . magit-blame))
 
     :config
-    (setq magit-last-seen-setup-instructions "1.4.0"))
+    (setq magit-last-seen-setup-instructions "1.4.0")
+    ;; Do not show recent commits in status buffer
+    (magit-add-section-hook 'magit-status-section-hook
+                        'magit-insert-unpushed-to-upstream
+                        'magit-insert-unpushed-to-upstream-or-recent
+                        'replace))
   #+END_SRC
 
 * Programming Modes
@@ -94,7 +112,28 @@
     (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
   )
   #+END_SRC
+** Ruby mode
+  Turn off the annoying magic encoding comment that ruby-mode inserts
+  (setq ruby-insert-encoding-magic-comment nil)
 
+** Auto-insert mode
+   Automatically insert some default stuff, mainly for inserting ~frozen_string_literal: true~ for ruby right now.
+   #+BEGIN_SRC emacs-lisp
+   (use-package autoinsert
+     :init
+     ;; Don't prompt before insertion
+     (setq auto-insert-query nil)
+     (auto-insert-mode t)
+
+     :config
+     (eval-after-load 'autoinsert
+       '(define-auto-insert
+         '("\\.rb\\'" . "ruby skeleton")
+         '("Description: "
+           "# frozen_string_literal: true" \n
+           \n)))
+   )
+   #+END_SRC
 * Custom Functions
 
   This section lists all the custom utility functions that I have created
@@ -134,8 +173,62 @@
     (linum-mode 0)))
   #+END_SRC
 
+** Window movement
+#+BEGIN_SRC emacs-lisp
+(defun zajn/previous-window ()
+  (interactive)
+  ;; TODO: Use `let` here instead of `setq`
+  (setq current-prefix-arg '(-1))
+  (call-interactively 'other-window))
+
+
+(global-set-key (kbd "M-o") 'other-window)
+(global-set-key (kbd "C-M-o") 'zajn/previous-window)
+#+END_SRC
+
+
 * Tramp
   Tramp seems to have some issues with ~zsh~, so we'll switch to bash when tramp is active.
   #+BEGIN_SRC emacs-lisp
   (eval-after-load 'tramp '(setenv "SHELL" "/bin/bash"))
+  #+END_SRC
+* Evil
+  #+BEGIN_SRC emacs-lisp
+  (use-package evil
+  :config
+  (evil-mode t)
+  (require 'cl)
+
+  ;; Make movement keys work like they should
+  (define-key evil-normal-state-map (kbd "<remap> <evil-next-line>") 'evil-next-visual-line)
+  (define-key evil-normal-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
+  (define-key evil-motion-state-map (kbd "<remap> <evil-next-line>") 'evil-next-visual-line)
+  (define-key evil-motion-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
+
+  ;; Make horizontal movement across lines
+  (setq-default evil-cross-lines t)
+  (eval-after-load "evil-maps"
+    (dolist (map '(evil-motion-state-map
+                   evil-insert-state-map
+                   evil-emacs-state-map))
+      (define-key (eval map) "\C-o" 'open-line-or-yas)))
+
+  ;; change mode-line color by evil state
+  (lexical-let ((default-color (cons (face-background 'mode-line)
+                                     (face-foreground 'mode-line))))
+    (add-hook 'post-command-hook
+              (lambda ()
+                (let ((color (cond ((minibufferp) default-color)
+                                   ((evil-insert-state-p) '("#eb5550" . "#ffffff"))
+                                   ((evil-emacs-state-p)  '("#444488" . "#ffffff"))
+                                   ((buffer-modified-p)   '("#006fa0" . "#ffffff"))
+                                   (t default-color))))
+                  (set-face-background 'mode-line (car color))
+                  (set-face-foreground 'mode-line (cdr color))))))
+
+  (add-to-list 'load-path "~/.emacs.d/lisp/evil-surround")
+  (require 'evil-surround)
+  (global-evil-surround-mode t)
+  (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
+  )
   #+END_SRC
